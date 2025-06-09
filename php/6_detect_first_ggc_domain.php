@@ -39,11 +39,9 @@ final class GgcDetector
     private function getCertificatePath(): string
     {
         $certFile = __DIR__ . '/../curl_cert/cacert.pem';
-        
         if (!file_exists($certFile)) {
             throw new RuntimeException('Файл сертификатов не найден', 500);
         }
-        
         return $certFile;
     }
 
@@ -55,13 +53,12 @@ final class GgcDetector
         }
 
         $certPath = $this->getCertificatePath();
-        
         $lastError = null;
+
         try {
             foreach (self::SOURCE_URLS as $url) {
                 $isHttps = strpos($url, 'https://') === 0;
-                
-                curl_setopt_array($ch, [
+                $curlOptions = [
                     CURLOPT_URL => $url,
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_TIMEOUT => 5,
@@ -73,24 +70,21 @@ final class GgcDetector
                     CURLOPT_SSL_VERIFYPEER => $isHttps,
                     CURLOPT_SSL_VERIFYHOST => $isHttps ? 2 : 0,
                     CURLOPT_CAINFO => $isHttps ? $certPath : null,
-                ]);
+                ];
 
                 for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++) {
+                    curl_setopt_array($ch, $curlOptions);
                     $response = curl_exec($ch);
 
                     if ($response === false) {
                         $lastError = 'Ошибка CURL: ' . curl_error($ch);
-                        if ($attempt < self::MAX_ATTEMPTS) {
-                            sleep(1);
-                        }
+                        if ($attempt < self::MAX_ATTEMPTS) sleep(1);
                         continue;
                     }
 
                     if (empty($response)) {
                         $lastError = 'Получен пустой ответ от сервера Google';
-                        if ($attempt < self::MAX_ATTEMPTS) {
-                            sleep(1);
-                        }
+                        if ($attempt < self::MAX_ATTEMPTS) sleep(1);
                         continue;
                     }
 
@@ -98,21 +92,17 @@ final class GgcDetector
                         $prefix = trim($matches[1], '.: ');
                         $converted = $this->decodePrefix($prefix);
                         
-                        if ($converted === null) {
+                        if ($converted === null || $converted === '') {
                             $lastError = 'Ошибка декодирования префикса: ' . $prefix;
                             continue;
                         }
-                        
                         return sprintf(self::GGC_DOMAIN_TEMPLATE, $converted);
                     }
                     
                     $lastError = 'Не удалось найти префикс в ответе';
-                    if ($attempt < self::MAX_ATTEMPTS) {
-                        sleep(1);
-                    }
+                    if ($attempt < self::MAX_ATTEMPTS) sleep(1);
                 }
             }
-            
             throw new RuntimeException($lastError ?? 'Все источники недоступны');
         } finally {
             curl_close($ch);
@@ -124,9 +114,7 @@ final class GgcDetector
         $decoded = '';
         for ($i = 0; $i < strlen($prefix); $i++) {
             $char = $prefix[$i];
-            if (!isset(self::CHAR_DECODER[$char])) {
-                return null;
-            }
+            if (!isset(self::CHAR_DECODER[$char])) return null;
             $decoded .= self::CHAR_DECODER[$char];
         }
         return $decoded;
