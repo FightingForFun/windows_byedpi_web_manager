@@ -49,7 +49,7 @@ function find_process(int $port, string $real_file_path): array {
         return ['ошибка' => 'Путь не может быть пустым.'];
     }
     if (!class_exists('COM')) {
-        return ['ошибка' => 'COM-расширение недоступно'];
+        return ['ошибка' => 'COM-расширение недоступно.'];
     }
     $absolute_file_path = realpath($real_file_path);
     if ($absolute_file_path === false) {
@@ -59,7 +59,7 @@ function find_process(int $port, string $real_file_path): array {
     try {
         $wmi = new COM('WinMgmts:\\\\.\\root\\cimv2');
         if (!$wmi || !is_object($wmi)) {
-            return ['ошибка' => 'WMI недоступен: Не удалось создать объект'];
+            return ['ошибка' => 'WMI недоступен: Не удалось создать объект.'];
         }
         $query = "SELECT ProcessId, CommandLine, ExecutablePath FROM Win32_Process WHERE CommandLine LIKE '%--port $port%'";
         $processes = $wmi->ExecQuery($query);

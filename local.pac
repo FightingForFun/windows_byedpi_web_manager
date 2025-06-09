@@ -3,9 +3,7 @@ function FindProxyForURL(url, host) {
     {
         "ip": "127.0.0.1",
         "port": 20001,
-        "domains": [
-            "ntc.party"
-        ]
+        "domains": []
     },
     {
         "ip": "127.0.0.1",
