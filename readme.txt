@@ -11,7 +11,7 @@ ByeDPI Web Manager (для Windows)
   - extension=curl
   - extension=openssl
   - extension=com_dotnet
-- Актуальный cacert.pem взятый из https://curl.se/ca/cacert.pem
+- Актуальный curl_cert\cacert.pem взятый из https://curl.se/ca/cacert.pem
 
 Настройка:
 - config.json
