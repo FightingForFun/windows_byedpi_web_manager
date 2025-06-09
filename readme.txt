@@ -1,4 +1,4 @@
-ByeDPI Web Manager (для Цштвщцы)
+ByeDPI Web Manager (для Windows)
 
 Кратко:
 - Генератор стратегий.
@@ -8,7 +8,7 @@ ByeDPI Web Manager (для Цштвщцы)
 Требования:
 - PHP версии 8.0.0 и выше.
 - Включённые PHP расширения curl и openssl и com_dotnet
-- Используются также: file_get_contents, file_put_contents, file, но они в большинстве случаев включены "по умолчанию".
+- Используются также функции: file_get_contents, file_put_contents, file, но они в большинстве случаев включены "по умолчанию".
 - Актуальный cacert.pem взятый из https://curl.se/ca/cacert.pem
 
 Настройка:
