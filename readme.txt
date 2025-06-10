@@ -52,3 +52,4 @@ ByeDPI Web Manager (для Windows)
 - Интерфейс можно посмотреть в screenshot.png
 
 Ссылка на обсуждение:
+https://ntc.party/t/byedpi-web-manager-windows-linux/16575
