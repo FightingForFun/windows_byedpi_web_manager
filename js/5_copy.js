@@ -11,6 +11,10 @@ class CopyManager {
         for (let i = 1; i <= 8; i++) {
             this.setupHandler(`copy-main-server-${i}`, `my-server-${i}-links`, this.copyDomains);
         }
+        
+        for (let i = 1; i <= 8; i++) {
+            this.setupHandler(`copy-my-server-${i}-strategy`, `my-server-${i}-strategy`, this.copyText);
+        }
     }
 
     static setupHandler(buttonId, targetId, copyFn) {
@@ -32,30 +36,30 @@ class CopyManager {
         CopyManager.copyToClipboard(text.trim());
     }
 
-static copyDomains(element) {
-  const text = element.value || '';
-  const domains = text.split('\n')
-    .map(line => {
-      const trimmed = line.trim();
-      if (!trimmed) return null;
+    static copyDomains(element) {
+        const text = element.value || '';
+        const domains = text.split('\n')
+            .map(line => {
+                const trimmed = line.trim();
+                if (!trimmed) return null;
 
-      const urlStr = trimmed.includes('://') 
-        ? trimmed 
-        : `https://${trimmed}`;
+                const urlStr = trimmed.includes('://') 
+                    ? trimmed 
+                    : `https://${trimmed}`;
 
-      try {
-        const url = new URL(urlStr);
-        return url.hostname.replace(/:\d+$/, '');
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean)
-    .filter((domain, i, arr) => arr.indexOf(domain) === i)
-    .join('\n');
+                try {
+                    const url = new URL(urlStr);
+                    return url.hostname.replace(/:\d+$/, '');
+                } catch {
+                    return null;
+                }
+            })
+            .filter(Boolean)
+            .filter((domain, i, arr) => arr.indexOf(domain) === i)
+            .join('\n');
 
-  CopyManager.copyToClipboard(domains);
-}
+        CopyManager.copyToClipboard(domains);
+    }
 
     static copyStrategies(element) {
         try {

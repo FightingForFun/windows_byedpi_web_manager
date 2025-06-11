@@ -175,8 +175,12 @@ html, body {
     color: var(--text);
     font-variant-ligatures: none;
     word-wrap: break-word;
+	text-align: center;
 }
-.textarea:focus {
+
+.textarea:focus,
+.textarea-mini:focus
+{
     outline: none;
 }
 
@@ -272,7 +276,9 @@ color: #155724;
 }
 
 .button:disabled, 
-.button.disabled {
+.button.disabled,
+.select:disabled,
+.select.disabled {
     background: #f3f4f6;
     color: #9ca3af;
     border-color: #d1d5db;
@@ -283,7 +289,11 @@ color: #155724;
 .button:disabled:hover,
 .button:disabled:focus,
 .button.disabled:hover,
-.button.disabled:focus {
+.button.disabled:focus,
+.select:disabled:hover,
+.select.disabled:focus,
+.select:disabled:hover,
+.select.disabled:focus {
     background: #f3f4f6;
     color: #9ca3af;
     border-color: #d1d5db;

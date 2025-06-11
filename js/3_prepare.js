@@ -282,42 +282,66 @@ async function detectOtherServersGGC(firstServer, status) {
     }
 
     // Шаг 9: Проверка портов (ciadpi_для_использования)
-    async function checkUsagePorts(status) {
-        LogModule.logMessage('ИНФО', 'Проверка портов (ciadpi для использования)...');
-        try {
-            const baseUrl = 'php/12_windows.php';
-            for (let i = 1; i <= 8; i++) {
-                const processKey = `процесс_${i}`;
-                const processData = appConfig.ciadpi_для_использования[processKey];
-                const port = processData.tcp_порт;
-                const requestData = {
-                    действие: 'проверка',
-                    реальный_полный_путь: processData.полный_путь,
-                    порт: port,
-                    ip_для_запуска: processData.ip_для_запуска
-                };
-                const response = await postData(baseUrl, requestData);
-                if (response.состояние === 'используется_нашим_процессом') {
-                    LogModule.logMessage('ОТЛАДКА', `Процесс (ciadpi для использования) на ${port} работает`);
-                    document.getElementById(`stop-main-server-${i}`).removeAttribute('hidden');
-                } else if (response.состояние === 'свободен') {
-                    LogModule.logMessage('ОТЛАДКА', `Порт (ciadpi для использования) ${port} свободен`);
-                    document.getElementById(`start-main-server-${i}`).removeAttribute('hidden');
-                } else if (response.состояние === 'используется_другим_процессом') {
-                    throw new Error(`Порт (ciadpi для использования) ${port} занят другим процессом`);
-                } else if (response.ошибка) {
-                    throw new Error(`Ошибка проверки порта (ciadpi для использования) ${port}: ${response.сообщение}`);
-                }
+async function checkUsagePorts(status) {
+    LogModule.logMessage('ИНФО', 'Проверка портов (ciadpi для использования)...');
+    try {
+        const baseUrl = 'php/12_windows.php';
+        for (let i = 1; i <= 8; i++) {
+            const processKey = `процесс_${i}`;
+            const processData = appConfig.ciadpi_для_использования[processKey];
+            const port = processData.tcp_порт;
+            const requestData = {
+                действие: 'проверка',
+                реальный_полный_путь: processData.полный_путь,
+                порт: port,
+                ip_для_запуска: processData.ip_для_запуска
+            };
+            const response = await postData(baseUrl, requestData);
+            const elements = {
+                startBtn: document.getElementById(`start-main-server-${i}`),
+                stopBtn: document.getElementById(`stop-main-server-${i}`),
+                strategyInput: document.getElementById(`my-server-${i}-strategy`),
+                cleanStrategyBtn: document.getElementById(`clean-my-server-${i}-strategy`),
+                linksTextarea: document.getElementById(`my-server-${i}-links`),
+                saveDomainsBtn: document.getElementById(`save-domains-main-server-${i}`),
+                hostSelect: document.getElementById(`select-use-domains-list-or-not-${i}`),
+                cleanMainServerBtn: document.getElementById(`clean-main-server-${i}`)
+            };
+            if (response.состояние === 'используется_нашим_процессом') {
+                LogModule.logMessage('ОТЛАДКА', `Процесс (ciadpi для использования) на ${port} работает`);
+                if (elements.stopBtn) elements.stopBtn.hidden = false;
+                if (elements.startBtn) elements.startBtn.hidden = true;
+                if (elements.strategyInput) elements.strategyInput.disabled = true;
+                if (elements.cleanStrategyBtn) elements.cleanStrategyBtn.disabled = true;
+                if (elements.linksTextarea) elements.linksTextarea.disabled = true;
+                if (elements.saveDomainsBtn) elements.saveDomainsBtn.disabled = true;
+                if (elements.hostSelect) elements.hostSelect.disabled = true;
+                if (elements.cleanMainServerBtn) elements.cleanMainServerBtn.disabled = true;
+            } else if (response.состояние === 'свободен') {
+                LogModule.logMessage('ОТЛАДКА', `Порт (ciadpi для использования) ${port} свободен`);
+                if (elements.startBtn) elements.startBtn.hidden = false;
+                if (elements.stopBtn) elements.stopBtn.hidden = true;
+                if (elements.strategyInput) elements.strategyInput.disabled = false;
+                if (elements.cleanStrategyBtn) elements.cleanStrategyBtn.disabled = false;
+                if (elements.linksTextarea) elements.linksTextarea.disabled = false;
+                if (elements.saveDomainsBtn) elements.saveDomainsBtn.disabled = false;
+                if (elements.hostSelect) elements.hostSelect.disabled = false;
+                if (elements.cleanMainServerBtn) elements.cleanMainServerBtn.disabled = false;
+            } else if (response.состояние === 'используется_другим_процессом') {
+                throw new Error(`Порт (ciadpi для использования) ${port} занят другим процессом`);
+            } else if (response.ошибка) {
+                throw new Error(`Ошибка проверки порта (ciadpi для использования) ${port}: ${response.сообщение}`);
             }
-            status.usagePorts = 'ОК';
-            LogModule.logMessage('ИНФО', 'Проверка портов (ciadpi для использования) завершена');
-            return true;
-        } catch (error) {
-            updateErrorStatus('usagePorts', error, status);
-            LogModule.logMessage('ОШИБКА', `${error.message}`);
-            return false;
         }
+        status.usagePorts = 'ОК';
+        LogModule.logMessage('ИНФО', 'Проверка портов (ciadpi для использования) завершена');
+        return true;
+    } catch (error) {
+        updateErrorStatus('usagePorts', error, status);
+        LogModule.logMessage('ОШИБКА', `${error.message}`);
+        return false;
     }
+}
 
     // Шаг 10: Проверка портов (ciadpi_для_проверки_стратегий)
     async function checkTestingPorts(status) {
@@ -421,6 +445,9 @@ async function detectOtherServersGGC(firstServer, status) {
 
     async function runPreparation() {
         const status = {};
+		LogModule.logMessage('ИНФО', '=================================');
+		LogModule.logMessage('ИНФО', 'https://github.com/FightingForFun');
+		LogModule.logMessage('ИНФО', '=================================');
         LogModule.logMessage('ИНФО', 'Начали подготовку...');
 
         if (!await detectOS(status)) {

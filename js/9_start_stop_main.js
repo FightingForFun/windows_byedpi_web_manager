@@ -2,26 +2,16 @@
 const ServerController = (() => {
     const MANAGEMENT_FILE_PATH = 'php/12_windows.php';
 
-    const getServerElements = (serverNumber) => ({
+const getServerElements = (serverNumber) => ({
         startBtn: document.getElementById(`start-main-server-${serverNumber}`),
         stopBtn: document.getElementById(`stop-main-server-${serverNumber}`),
         strategyInput: document.getElementById(`my-server-${serverNumber}-strategy`),
+        cleanStrategyBtn: document.getElementById(`clean-my-server-${serverNumber}-strategy`),
+        linksTextarea: document.getElementById(`my-server-${serverNumber}-links`),
+        saveDomainsBtn: document.getElementById(`save-domains-main-server-${serverNumber}`),
         hostSelect: document.getElementById(`select-use-domains-list-or-not-${serverNumber}`),
-        hostLinks: document.getElementById(`my-server-${serverNumber}-links`)
+        cleanMainServerBtn: document.getElementById(`clean-main-server-${serverNumber}`)
     });
-
-    const validateServerConfig = (serverConfig, isStopOperation = false) => {
-        const errors = [];
-        if (!serverConfig.ciadpiPath) errors.push('путь к ciadpi');
-        if (!isStopOperation && !serverConfig.ipForRun) errors.push('IP для запуска');
-        if (!serverConfig.port) errors.push('порт');
-        
-        if (errors.length > 0) {
-            LogModule.logMessage('ОШИБКА', `Для процесса (ciadpi для использования ${serverConfig.serverNumber}) отсутствует: ${errors.join(', ')}`);
-            return false;
-        }
-        return true;
-    };
 
     const toggleButtons = (elements, isRunning) => {
         if (elements.startBtn) {
@@ -35,9 +25,34 @@ const ServerController = (() => {
         if (elements.strategyInput) {
             elements.strategyInput.disabled = isRunning;
         }
+        if (elements.cleanStrategyBtn) {
+            elements.cleanStrategyBtn.disabled = isRunning;
+        }
+        if (elements.linksTextarea) {
+            elements.linksTextarea.disabled = isRunning;
+        }
+        if (elements.saveDomainsBtn) {
+            elements.saveDomainsBtn.disabled = isRunning;
+        }
         if (elements.hostSelect) {
             elements.hostSelect.disabled = isRunning;
         }
+        if (elements.cleanMainServerBtn) {
+            elements.cleanMainServerBtn.disabled = isRunning;
+        }
+    };
+
+    const validateServerConfig = (serverConfig, isStopOperation = false) => {
+        const errors = [];
+        if (!serverConfig.ciadpiPath) errors.push('путь к ciadpi');
+        if (!isStopOperation && !serverConfig.ipForRun) errors.push('IP для запуска');
+        if (!serverConfig.port) errors.push('порт');
+        
+        if (errors.length > 0) {
+            LogModule.logMessage('ОШИБКА', `Для процесса (ciadpi для использования ${serverConfig.serverNumber}) отсутствует: ${errors.join(', ')}`);
+            return false;
+        }
+        return true;
     };
 
     const sendRequest = async (postData) => {
@@ -77,53 +92,53 @@ const ServerController = (() => {
             hostsFilePath: window.appConfig?.ciadpi_для_использования?.[`процесс_${serverNumber}`]?.полный_путь_к_хост_листу
         };
 
-    try {
-        elements.startBtn.disabled = true;
-        const strategy = elements.strategyInput?.value?.trim() || '';
-        
-        if (!strategy) {
-            LogModule.logMessage('ОШИБКА', `Для процесса (ciadpi для использования ${serverNumber}) не указана стратегия`);
-            return;
+        try {
+            elements.startBtn.disabled = true;
+            const strategy = elements.strategyInput?.value?.trim() || '';
+            
+            if (!strategy) {
+                LogModule.logMessage('ОШИБКА', `Для процесса (ciadpi для использования ${serverNumber}) не указана стратегия`);
+                return;
+            }
+            
+            if (!validateServerConfig(serverConfig)) return;
+            
+            const useHosts = elements.hostSelect?.value === 'true';
+            if (useHosts && (!elements.hostLinks?.value?.trim() || !serverConfig.hostsFilePath)) {
+                LogModule.logMessage('ОШИБКА', `Для процесса (ciadpi для использования ${serverNumber}) не настроен хост-лист (или пустой)`);
+                return;
+            }
+
+            let args = strategy;
+            if (useHosts) {
+                args = `--hosts "${serverConfig.hostsFilePath}" ${strategy}`;
+            }
+
+            const postData = {
+                действие: "проверить_и_запустить",
+                реальный_полный_путь: serverConfig.ciadpiPath,
+                ip_для_запуска: serverConfig.ipForRun,
+                порт: serverConfig.port,
+                аргументы: args
+            };
+
+            const response = await sendRequest(postData);
+            const data = await response.json();
+
+            if (!response.ok || !data.результат) {
+                const errorMessage = data.сообщение || `HTTP ошибка: ${response.status}`;
+                throw new Error(errorMessage);
+            }
+
+            LogModule.logMessage('ИНФО', `Процесс (ciadpi для использования ${serverNumber}) успешно запущен`);
+            toggleButtons(elements, true);
+            saveStrategy(serverNumber, strategy);
+        } catch (error) {
+            LogModule.logMessage('ОШИБКА', `Ошибка запуска процесса (ciadpi для использования ${serverNumber}): ${error.message}`);
+        } finally {
+            elements.startBtn.disabled = false;
         }
-        
-        if (!validateServerConfig(serverConfig)) return;
-        
-        const useHosts = elements.hostSelect?.value === 'true';
-        if (useHosts && (!elements.hostLinks?.value?.trim() || !serverConfig.hostsFilePath)) {
-            LogModule.logMessage('ОШИБКА', `Для процесса (ciadpi для использования ${serverNumber}) не настроен хост-лист (или пустой)`);
-            return;
-        }
-
-        let args = strategy;
-        if (useHosts) {
-            args = `--hosts "${serverConfig.hostsFilePath}" ${strategy}`;
-        }
-
-        const postData = {
-            действие: "проверить_и_запустить",
-            реальный_полный_путь: serverConfig.ciadpiPath,
-            ip_для_запуска: serverConfig.ipForRun,
-            порт: serverConfig.port,
-            аргументы: args
-        };
-
-        const response = await sendRequest(postData);
-        const data = await response.json();
-
-        if (!response.ok || !data.результат) {
-            const errorMessage = data.сообщение || `HTTP ошибка: ${response.status}`;
-            throw new Error(errorMessage);
-        }
-
-        LogModule.logMessage('ИНФО', `Процесс (ciadpi для использования ${serverNumber}) успешно запущен`);
-        toggleButtons(elements, true);
-        saveStrategy(serverNumber, strategy);
-    } catch (error) {
-        LogModule.logMessage('ОШИБКА', `Ошибка запуска процесса (ciadpi для использования ${serverNumber}): ${error.message}`);
-    } finally {
-        elements.startBtn.disabled = false;
-    }
-};
+    };
 
     const handleStop = async (serverNumber) => {
         const elements = getServerElements(serverNumber);
@@ -133,33 +148,33 @@ const ServerController = (() => {
             port: window.appConfig?.ciadpi_для_использования?.[`процесс_${serverNumber}`]?.tcp_порт
         };
 
-    try {
-        elements.stopBtn.disabled = true;
-        
-        if (!validateServerConfig(serverConfig, true)) return;
+        try {
+            elements.stopBtn.disabled = true;
+            
+            if (!validateServerConfig(serverConfig, true)) return;
 
-        const postData = {
-            действие: "проверить_и_завершить",
-            реальный_полный_путь: serverConfig.ciadpiPath,
-            порт: serverConfig.port
-        };
+            const postData = {
+                действие: "проверить_и_завершить",
+                реальный_полный_путь: serverConfig.ciadpiPath,
+                порт: serverConfig.port
+            };
 
-        const response = await sendRequest(postData);
-        const data = await response.json();
+            const response = await sendRequest(postData);
+            const data = await response.json();
 
-        if (!response.ok || !data.результат) {
-            const errorMessage = data.сообщение || `HTTP ошибка: ${response.status}`;
-            throw new Error(errorMessage);
+            if (!response.ok || !data.результат) {
+                const errorMessage = data.сообщение || `HTTP ошибка: ${response.status}`;
+                throw new Error(errorMessage);
+            }
+
+            LogModule.logMessage('ИНФО', `Процесс (ciadpi для использования ${serverNumber}) успешно остановлен`);
+            toggleButtons(elements, false);
+        } catch (error) {
+            LogModule.logMessage('ОШИБКА', `Ошибка остановки процесса (ciadpi для использования ${serverNumber}): ${error.message}`);
+        } finally {
+            elements.stopBtn.disabled = false;
         }
-
-        LogModule.logMessage('ИНФО', `Процесс (ciadpi для использования ${serverNumber}) успешно остановлен`);
-        toggleButtons(elements, false);
-    } catch (error) {
-        LogModule.logMessage('ОШИБКА', `Ошибка остановки процесса (ciadpi для использования ${serverNumber}): ${error.message}`);
-    } finally {
-        elements.stopBtn.disabled = false;
-    }
-};
+    };
 
     const saveStrategy = async (serverNumber, strategy) => {
         try {

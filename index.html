@@ -7,6 +7,8 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ByeDPI Web Manager</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">
 </head>
@@ -197,7 +199,7 @@
                         <tr id="fake">
                             <td>
                                 <select class="select no-border full-width form-element" id="gen-fake-weight">
-                                    <option value="0" selected>Не использовать</option>
+                                    <option value="0">Не использовать</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
                                     <option value="3">3</option>
@@ -207,7 +209,7 @@
                                     <option value="7">7</option>
                                     <option value="8">8</option>
                                     <option value="9">9</option>
-                                    <option value="10">10</option>
+                                    <option value="10" selected>10</option>
                                 </select>
                             </td>
                             <td><span class="for-text no-border full-width form-element" id="gen-fake-parameter">--fake</span></td>
@@ -237,10 +239,10 @@
                         <tr id="fake-offset">
                             <td>
                                 <select class="select no-border full-width form-element" id="gen-fake-offset-weight">
-                                    <option value="0" selected>Не использовать</option>
+                                    <option value="0">Не использовать</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
-                                    <option value="3">3</option>
+                                    <option value="3" selected>3</option>
                                     <option value="4">4</option>
                                     <option value="5">5</option>
                                     <option value="6">6</option>
@@ -257,10 +259,10 @@
                         <tr id="ttl">
                             <td>
                                 <select class="select no-border full-width form-element" id="gen-ttl-weight">
-                                    <option value="0" selected>Не использовать</option>
+                                    <option value="0">Не использовать</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
-                                    <option value="3">3</option>
+                                    <option value="3" selected>3</option>
                                     <option value="4">4</option>
                                     <option value="5">5</option>
                                     <option value="6">6</option>
@@ -277,10 +279,10 @@
                         <tr id="fake-data">
                             <td>
                                 <select class="select no-border full-width form-element" id="gen-fake-data-weight">
-                                    <option value="0" selected>Не использовать</option>
+                                    <option value="0">Не использовать</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
-                                    <option value="3">3</option>
+                                    <option value="3" selected>3</option>
                                     <option value="4">4</option>
                                     <option value="5">5</option>
                                     <option value="6">6</option>
@@ -297,10 +299,10 @@
                         <tr id="fake-sni">
                             <td>
                                 <select class="select no-border full-width form-element" id="gen-fake-sni-weight">
-                                    <option value="0" selected>Не использовать</option>
+                                    <option value="0">Не использовать</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
-                                    <option value="3">3</option>
+                                    <option value="3" selected>3</option>
                                     <option value="4">4</option>
                                     <option value="5">5</option>
                                     <option value="6">6</option>
@@ -317,10 +319,10 @@
                         <tr id="fake-tls-mod">
                             <td>
                                 <select class="select no-border full-width form-element" id="gen-fake-tls-mod-weight">
-                                    <option value="0" selected>Не использовать</option>
+                                    <option value="0">Не использовать</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
-                                    <option value="3">3</option>
+                                    <option value="3" selected>3</option>
                                     <option value="4">4</option>
                                     <option value="5">5</option>
                                     <option value="6">6</option>
@@ -1650,8 +1652,8 @@
                 </select>
                 <select id="gen-desync-count" class="select full-width form-element like-a-button">
                     <option value="1">Десинхронизаторов в строке: 1</option>
-                    <option value="2">Десинхронизаторов в строке: 2</option>
-                    <option value="3" selected>Десинхронизаторов в строке: 3</option>
+                    <option value="2" selected>Десинхронизаторов в строке: 2</option>
+                    <option value="3">Десинхронизаторов в строке: 3</option>
                     <option value="4">Десинхронизаторов в строке: 4</option>
                     <option value="5">Десинхронизаторов в строке: 5</option>
                     <option value="6">Десинхронизаторов в строке: 6</option>
@@ -1872,6 +1874,10 @@
                     <p class="text-base font-normal border-b" id="my-server-1-ip-and-port"></p>
                     <p class="text-base font-normal">Стратегия:</p>
                     <textarea class="textarea-mini text-sm" id="my-server-1-strategy"></textarea>
+                    <div class="grid grid-cols-2">
+                        <button class="button form-element like-a-button" id="copy-my-server-1-strategy">Копировать</button>
+                        <button class="button form-element like-a-button" id="clean-my-server-1-strategy">Очистить</button>
+					</div>					
                     <p class="text-base font-normal">Домены (Для PAC и хост листа):</p>
 					<textarea id="my-server-1-links" class="textarea text-sm"></textarea>
                     <button type="button" class="button form-element like-a-button" id="save-domains-main-server-1">Сохранить домены</button>
@@ -1892,6 +1898,10 @@
                     <p class="text-base font-normal border-b" id="my-server-2-ip-and-port"></p>
                     <p class="text-base font-normal">Стратегия:</p>
                     <textarea class="textarea-mini text-sm" id="my-server-2-strategy"></textarea>
+                    <div class="grid grid-cols-2">
+                        <button class="button form-element like-a-button" id="copy-my-server-2-strategy">Копировать</button>
+                        <button class="button form-element like-a-button" id="clean-my-server-2-strategy">Очистить</button>
+					</div>					
                     <p class="text-base font-normal">Домены (Для PAC и хост листа):</p>
 					<textarea id="my-server-2-links" class="textarea text-sm"></textarea>
                     <button type="button" class="button form-element like-a-button" id="save-domains-main-server-2">Сохранить домены</button>
@@ -1912,6 +1922,10 @@
                     <p class="text-base font-normal border-b" id="my-server-3-ip-and-port"></p>
                     <p class="text-base font-normal">Стратегия:</p>
                     <textarea class="textarea-mini text-sm" id="my-server-3-strategy"></textarea>
+                    <div class="grid grid-cols-2">
+                        <button class="button form-element like-a-button" id="copy-my-server-3-strategy">Копировать</button>
+                        <button class="button form-element like-a-button" id="clean-my-server-3-strategy">Очистить</button>
+					</div>					
                     <p class="text-base font-normal">Домены (Для PAC и хост листа):</p>
 					<textarea id="my-server-3-links" class="textarea text-sm"></textarea>
                     <button type="button" class="button form-element like-a-button" id="save-domains-main-server-3">Сохранить домены</button>
@@ -1932,6 +1946,10 @@
                     <p class="text-base font-normal border-b" id="my-server-4-ip-and-port"></p>
                     <p class="text-base font-normal">Стратегия:</p>
                     <textarea class="textarea-mini text-sm" id="my-server-4-strategy"></textarea>
+                    <div class="grid grid-cols-2">
+                        <button class="button form-element like-a-button" id="copy-my-server-4-strategy">Копировать</button>
+                        <button class="button form-element like-a-button" id="clean-my-server-4-strategy">Очистить</button>
+					</div>					
                     <p class="text-base font-normal">Домены (Для PAC и хост листа):</p>
 					<textarea id="my-server-4-links" class="textarea text-sm"></textarea>
                     <button type="button" class="button form-element like-a-button" id="save-domains-main-server-4">Сохранить домены</button>
@@ -1952,6 +1970,10 @@
                     <p class="text-base font-normal border-b" id="my-server-5-ip-and-port"></p>
                     <p class="text-base font-normal">Стратегия:</p>
                     <textarea class="textarea-mini text-sm" id="my-server-5-strategy"></textarea>
+                    <div class="grid grid-cols-2">
+                        <button class="button form-element like-a-button" id="copy-my-server-5-strategy">Копировать</button>
+                        <button class="button form-element like-a-button" id="clean-my-server-5-strategy">Очистить</button>
+					</div>					
                     <p class="text-base font-normal">Домены (Для PAC и хост листа):</p>
 					<textarea id="my-server-5-links" class="textarea text-sm"></textarea>
                     <button type="button" class="button form-element like-a-button" id="save-domains-main-server-5">Сохранить домены</button>
@@ -1972,6 +1994,10 @@
                     <p class="text-base font-normal border-b" id="my-server-6-ip-and-port"></p>
                     <p class="text-base font-normal">Стратегия:</p>
                     <textarea class="textarea-mini text-sm" id="my-server-6-strategy"></textarea>
+                    <div class="grid grid-cols-2">
+                        <button class="button form-element like-a-button" id="copy-my-server-6-strategy">Копировать</button>
+                        <button class="button form-element like-a-button" id="clean-my-server-6-strategy">Очистить</button>
+					</div>					
                     <p class="text-base font-normal">Домены (Для PAC и хост листа):</p>
 					<textarea id="my-server-6-links" class="textarea text-sm"></textarea>
                     <button type="button" class="button form-element like-a-button" id="save-domains-main-server-6">Сохранить домены</button>
@@ -1992,6 +2018,10 @@
                     <p class="text-base font-normal border-b" id="my-server-7-ip-and-port"></p>
                     <p class="text-base font-normal">Стратегия:</p>
                     <textarea class="textarea-mini text-sm" id="my-server-7-strategy"></textarea>
+                    <div class="grid grid-cols-2">
+                        <button class="button form-element like-a-button" id="copy-my-server-7-strategy">Копировать</button>
+                        <button class="button form-element like-a-button" id="clean-my-server-7-strategy">Очистить</button>
+					</div>					
                     <p class="text-base font-normal">Домены (Для PAC и хост листа):</p>
 					<textarea id="my-server-7-links" class="textarea text-sm"></textarea>
                     <button type="button" class="button form-element like-a-button" id="save-domains-main-server-7">Сохранить домены</button>
@@ -2012,6 +2042,10 @@
                     <p class="text-base font-normal border-b" id="my-server-8-ip-and-port"></p>
                     <p class="text-base font-normal">Стратегия:</p>
                     <textarea class="textarea-mini text-sm" id="my-server-8-strategy"></textarea>
+                    <div class="grid grid-cols-2">
+                        <button class="button form-element like-a-button" id="copy-my-server-8-strategy">Копировать</button>
+                        <button class="button form-element like-a-button" id="clean-my-server-8-strategy">Очистить</button>
+					</div>					
                     <p class="text-base font-normal">Домены (Для PAC и хост листа):</p>
 					<textarea id="my-server-8-links" class="textarea text-sm"></textarea>
                     <button type="button" class="button form-element like-a-button" id="save-domains-main-server-8">Сохранить домены</button>

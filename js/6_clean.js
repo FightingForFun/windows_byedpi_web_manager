@@ -7,6 +7,10 @@ class ClearManager {
         for (let i = 1; i <= 8; i++) {
             this.setupHandler(`clean-main-server-${i}`, `my-server-${i}-links`);
         }
+        
+        for (let i = 1; i <= 8; i++) {
+            this.setupHandler(`clean-my-server-${i}-strategy`, `my-server-${i}-strategy`);
+        }
     }
 
     static setupHandler(buttonId, targetId) {

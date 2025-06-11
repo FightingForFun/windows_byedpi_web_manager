@@ -1,4 +1,4 @@
-//10_start_stop_test.js
+// 10_start_stop_test.js
 class UIController {
     constructor() {
         this.elements = {
@@ -165,22 +165,22 @@ class ProcessController {
         return this.config.ciadpi_для_проверки_стратегий[`процесс_${threadId}`].tcp_порт;
     }
 
-async sendRequest(postData) {
-    try {
-        const response = await fetch(this.api, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postData)
-        });
-        const responseBody = await response.json();
-        if (!response.ok) {
-            throw new Error(responseBody.сообщение || `HTTP ошибка: ${response.status}`);
+    async sendRequest(postData) {
+        try {
+            const response = await fetch(this.api, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData)
+            });
+            const responseBody = await response.json();
+            if (!response.ok) {
+                throw new Error(responseBody.сообщение || `HTTP ошибка: ${response.status}`);
+            }
+            return responseBody;
+        } catch (error) {
+            throw new Error(`Ошибка запроса: ${error.message}`);
         }
-        return responseBody;
-    } catch (error) {
-        throw new Error(`Ошибка запроса: ${error.message}`);
     }
-}
 }
 
 class LinkChecker {
@@ -188,45 +188,45 @@ class LinkChecker {
         this.params = params;
     }
 
-async check(threadId, link) {
-    const ip = window.appConfig.ciadpi_для_проверки_стратегий.ip_для_запуска;
-    const port = window.appConfig.ciadpi_для_проверки_стратегий[`процесс_${threadId}`].tcp_порт;
-    const postData = {
-        socks5_server_ip: ip,
-        socks5_server_port: port,
-        curl_connection_timeout: this.params.connectionTimeout,
-        curl_max_timeout: this.params.maxTimeout,
-        curl_http_method: this.params.httpMethod,
-        curl_http_version: this.params.httpVersion,
-        curl_tls_version: this.params.tlsVersion,
-        curl_user_agent: this.params.userAgent,
-        link
-    };
-    try {
-        const response = await fetch('php/11_curl.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postData)
-        });
-        const responseBody = await response.json();
-        if (!response.ok) {
+    async check(threadId, link) {
+        const ip = window.appConfig.ciadpi_для_проверки_стратегий.ip_для_запуска;
+        const port = window.appConfig.ciadpi_для_проверки_стратегий[`процесс_${threadId}`].tcp_порт;
+        const postData = {
+            socks5_server_ip: ip,
+            socks5_server_port: port,
+            curl_connection_timeout: this.params.connectionTimeout,
+            curl_max_timeout: this.params.maxTimeout,
+            curl_http_method: this.params.httpMethod,
+            curl_http_version: this.params.httpVersion,
+            curl_tls_version: this.params.tlsVersion,
+            curl_user_agent: this.params.userAgent,
+            link
+        };
+        try {
+            const response = await fetch('php/11_curl.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData)
+            });
+            const responseBody = await response.json();
+            if (!response.ok) {
+                return {
+                    результат: false,
+                    сообщение: responseBody.сообщение || `HTTP ошибка: ${response.status}`,
+                    код_ответа_http: '000',
+                    link
+                };
+            }
+            return { ...responseBody, link: responseBody.link || link };
+        } catch (error) {
             return {
                 результат: false,
-                сообщение: responseBody.сообщение || `HTTP ошибка: ${response.status}`,
+                сообщение: error.message,
                 код_ответа_http: '000',
                 link
             };
         }
-        return { ...responseBody, link: responseBody.link || link };
-    } catch (error) {
-        return {
-            результат: false,
-            сообщение: error.message,
-            код_ответа_http: '000',
-            link
-        };
     }
-}
 }
 
 class StrategyExecutor {
@@ -323,11 +323,11 @@ class TaskCoordinator {
             }
 
             const threadCount = parseInt(document.getElementById('process-threads').value);
-            const groups = this.splitStrategies(strategies, threadCount);
+            const strategyQueue = [...strategies];
 
             this.ui.setTotalStrategies(strategies.length);
             this.ui.setTotalLinks(links.length);
-            this.ui.setThreads(groups.length);
+            this.ui.setThreads(threadCount);
 
             const params = {
                 connectionTimeout: document.getElementById('curl-connection-timeout').value,
@@ -341,12 +341,40 @@ class TaskCoordinator {
             const processController = new ProcessController(window.appConfig);
             const linkChecker = new LinkChecker(params);
 
-            const tasks = groups.map((group, index) => {
-                const threadId = index + 1;
-                return this.processGroup(threadId, group, links, processController, linkChecker);
-            });
+            const worker = async (threadId) => {
+                while (strategyQueue.length > 0 && !this.stopped) {
+                    const strategy = strategyQueue.shift();
+                    if (!strategy) continue;
+
+                    const executor = new StrategyExecutor(threadId, strategy, processController, linkChecker, links);
+                    const result = await executor.execute();
+
+                    if (result.processed) {
+                        this.processedCount++;
+                        this.ui.setProcessed(this.processedCount);
+                        if (result.bucket) {
+                            this.buckets[result.bucket]++;
+                            this.ui.updateBucket(result.bucket, this.buckets[result.bucket]);
+                        }
+                        this.ui.appendResult(this.formatResult(strategy, result.responses, result.percentage));
+                    }
+                }
+
+                const currentThreads = parseInt(this.ui.elements.threads.textContent);
+                this.ui.setThreads(Math.max(0, currentThreads - 1));
+            };
+
+            const tasks = [];
+            for (let i = 0; i < threadCount; i++) {
+                tasks.push(worker(i + 1));
+            }
 
             await Promise.all(tasks);
+            if (this.stopped) {
+                LogModule.logMessage('ИНФО', 'Проверка остановлена.');
+            } else {
+                LogModule.logMessage('ИНФО', 'Проверка завершена.');
+            }
             this.ui.finalize(this.stopped);
         } catch (error) {
             LogModule.logMessage('ОШИБКА', `Ошибка: ${error.message}`);
@@ -360,38 +388,13 @@ class TaskCoordinator {
         this.stopped = true;
         this.ui.setStatus('Останавливаем...');
         this.ui.disableStop();
-    }
-
-    splitStrategies(strategies, count) {
-        const size = Math.ceil(strategies.length / count);
-        return Array.from({ length: count }, (_, i) => strategies.slice(i * size, (i + 1) * size));
-    }
-
-    async processGroup(threadId, strategies, links, processController, linkChecker) {
-        for (const strategy of strategies) {
-            if (this.stopped) break;
-            
-            const executor = new StrategyExecutor(threadId, strategy, processController, linkChecker, links);
-            const result = await executor.execute();
-            
-            if (result.processed) {
-                this.processedCount++;
-                this.ui.setProcessed(this.processedCount);
-                if (result.bucket) {
-                    this.buckets[result.bucket]++;
-                    this.ui.updateBucket(result.bucket, this.buckets[result.bucket]);
-                }
-                this.ui.appendResult(this.formatResult(strategy, result.responses, result.percentage));
-            }
-        }
-        const currentThreads = parseInt(this.ui.elements.threads.textContent);
-        this.ui.setThreads(Math.max(0, currentThreads - 1));
+        LogModule.logMessage('ИНФО', 'Останавливаем проверку...');
     }
 
     formatResult(strategy, responses, percentage) {
         const lines = responses.map(r => {
             const color = r.результат ? 'green' : 'red';
-            const message = r.результат ? 'OK' : r.сообщение;
+            const message = r.результат ? 'OK' : `${r.сообщение} (код: ${r.код_ошибки})`;
             return `<p class="${color}">${r.код_ответа_http} - ${r.link} - ${message}</p>`;
         }).join('');
         return `<div class="result-block" data-percentage="${percentage}"><p><===</p><p class="blue">Стратегия: ${strategy}</p>${lines}<p>${percentage}%</p><p>===></p></div>`;

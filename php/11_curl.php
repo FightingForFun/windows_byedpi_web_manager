@@ -222,9 +222,11 @@ final class CurlExecutor
             $response = curl_exec($ch);
             if ($response === false) {
                 $error = curl_error($ch);
+				$errno = curl_errno($ch);
                 return [
                     'результат' => false,
                     'сообщение' => $error,
+					'код_ошибки' => $errno,
                     'код_ответа_http' => '000',
                     'ссылка' => $data['link']
                 ];
