@@ -2,7 +2,7 @@
 class CopyManager {
     static init() {
         this.setupHandler('copy-pac-link', 'pac-link', this.copyText);
-        this.setupHandler('copy-result', 'result', this.copyText);
+        this.setupHandler('copy-result', 'result', this.copyTextFromDiv);
         this.setupHandler('copy-links', 'links', this.copyText);
         this.setupHandler('copy-links-domains', 'links', this.copyDomains);
         this.setupHandler('copy-generated-strategies', 'generated-strategies', this.copyText);
@@ -29,6 +29,15 @@ class CopyManager {
             }
             copyFn(target);
         });
+    }
+
+    static copyTextFromDiv(element) {
+        const text = element.innerText || '';
+        const cleanedText = text.split('\n')
+            .map(line => line.trim())
+            .filter(line => line !== '')
+            .join('\n');
+        CopyManager.copyToClipboard(cleanedText);
     }
 
     static copyText(element) {

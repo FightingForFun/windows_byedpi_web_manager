@@ -12,6 +12,7 @@ ByeDPI Web Manager (для Windows)
   - extension=openssl
   - extension=com_dotnet  
 - Актуальный curl_cert\cacert.pem взятый из https://curl.se/ca/cacert.pem
+- Понимание что такое и как пользоваться SOCKS5, PAC, F12 -> вкладка "Сеть" в любом браузере.
 
 Настройка:
 - config.json
