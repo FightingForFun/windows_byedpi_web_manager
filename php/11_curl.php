@@ -1,5 +1,5 @@
 <?php
-//11_curl.php
+// 11_curl.php
 declare(strict_types=1);
 set_time_limit(60);
 ini_set('display_errors', '0');
@@ -40,7 +40,7 @@ final class RequestValidator
         }
 
         $this->validateContentType();
-        
+
         if (trim($rawInput) === '') {
             throw new RuntimeException('Пустое тело запроса', 400);
         }
@@ -49,7 +49,7 @@ final class RequestValidator
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new RuntimeException('Неверный формат JSON: ' . json_last_error_msg(), 400);
         }
-        
+
         if (!is_array($data)) {
             throw new RuntimeException('Данные должны быть объектом JSON', 400);
         }
@@ -77,26 +77,26 @@ final class RequestValidator
     {
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
         $mime = trim(explode(';', $contentType)[0]);
-        
+
         if ($mime !== 'application/json') {
             throw new RuntimeException('Неверный Content-Type. Требуется: application/json', 415);
         }
     }
-    
+
     private function validateSocksIp(mixed &$value): void
     {
         if (!is_string($value)) {
             throw new RuntimeException('socks5_server_ip должен быть строкой', 400);
         }
-        
+
         if ($value === '0.0.0.0') {
             $value = '127.0.0.1';
         }
-        
+
         if (!filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             throw new RuntimeException('Недопустимый IP-адрес для SOCKS5', 400);
         }
-    }   
+    }
 
     private function validateNumeric(mixed $value, int $min, int $max, string $name): void
     {
@@ -119,34 +119,34 @@ final class RequestValidator
             throw new RuntimeException('Недопустимая версия HTTP', 400);
         }
     }
-    
+
     private function validateTlsVersion(mixed $value): void
     {
         $validVersions = ['default', 'tls1-2', 'tls1-3'];
         if (!is_string($value) || !in_array($value, $validVersions, true)) {
             throw new RuntimeException('Недопустимая версия TLS', 400);
         }
-    }   
+    }
 
     private function validateLink(mixed &$value): void
     {
         if (!is_string($value)) {
             throw new RuntimeException('URL должен быть строкой', 400);
         }
-        
+
         if (strlen($value) > 2000) {
             throw new RuntimeException('URL слишком длинный', 400);
         }
-        
+
         if (!preg_match('#^https?://#i', $value)) {
             $value = 'https://' . $value;
         }
-        
+
         if (!filter_var($value, FILTER_VALIDATE_URL)) {
             throw new RuntimeException('Недопустимый URL', 400);
         }
     }
-    
+
 }
 
 final class CurlExecutor
@@ -172,7 +172,7 @@ final class CurlExecutor
                 'http2' => CURL_HTTP_VERSION_2,
                 default => null
             };
-            
+
         $tlsVersion = null;
         $tlsSetting = $data['curl_tls_version'];
 
@@ -190,9 +190,9 @@ final class CurlExecutor
                 throw new RuntimeException('CURL не поддерживает строгую версию TLS 1.3', 500);
             }
         }
-            
+
             $userAgent = $this->getUserAgent((int)$data['curl_user_agent']);
-            
+
             $curlOptions = [
                 CURLOPT_URL => $data['link'],
                 CURLOPT_PROXY => "{$data['socks5_server_ip']}:{$data['socks5_server_port']}",
@@ -209,15 +209,15 @@ final class CurlExecutor
                 CURLOPT_MAXREDIRS => 0,
                 CURLOPT_NOBODY => strtolower($data['curl_http_method']) === 'head',
             ];
-            
+
             if ($httpVersion !== null) {
                 $curlOptions[CURLOPT_HTTP_VERSION] = $httpVersion;
             }
             if ($tlsVersion !== null) {
                 $curlOptions[CURLOPT_SSLVERSION] = $tlsVersion;
-            }   
+            }
 
-            curl_setopt_array($ch, $curlOptions);       
+            curl_setopt_array($ch, $curlOptions);
 
             $response = curl_exec($ch);
             if ($response === false) {
@@ -256,11 +256,11 @@ final class CurlExecutor
     private function getCertificatePath(): string
     {
         $certFile = __DIR__ . '/../curl_cert/cacert.pem';
-        
+
         if (!file_exists($certFile)) {
             throw new RuntimeException('Файл сертификатов не найден', 500);
         }
-        
+
         return $certFile;
     }
 }

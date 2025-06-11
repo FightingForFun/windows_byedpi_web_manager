@@ -1,5 +1,5 @@
 <?php
-//7_detect_other_ggc_domains.php
+// 7_detect_other_ggc_domains.php
 declare(strict_types=1);
 set_time_limit(60);
 ini_set('display_errors', '0');

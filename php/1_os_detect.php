@@ -1,5 +1,5 @@
 <?php
-//1_os_detect.php
+// 1_os_detect.php
 declare(strict_types=1);
 set_time_limit(60);
 ini_set('display_errors', '0');

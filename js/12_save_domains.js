@@ -1,16 +1,17 @@
 // 12_save_domains.js
 const DomainManager = (() => {
 
-    function extractDomain(line) {
-        const trimmed = line.trim().toLowerCase();
-        if (!trimmed) return null;
-        
-        return trimmed
-            .replace(/^(https?):\/\//, '')
-            .split('/')[0]
-            .split(':')[0]
-            .split('?')[0];
+function extractDomain(line) {
+    let trimmed = line.trim().toLowerCase();
+    if (!trimmed) return null;
+    
+    const protocolIndex = trimmed.indexOf('://');
+    if (protocolIndex !== -1) {
+        trimmed = trimmed.substring(protocolIndex + 3);
     }
+    
+    return trimmed.split('/')[0].split(':')[0].split('?')[0];
+}
 
     function isValidDomain(domain) {
         return /^([a-z0-9-]+\.)+[a-z]{2,}$/.test(domain);
@@ -30,22 +31,22 @@ const DomainManager = (() => {
         return [...domains];
     }
 
-    function findDuplicate(server, domains) {
-        for (let otherServer = 1; otherServer <= 8; otherServer++) {
-            if (otherServer === server) continue;
-            
-            const element = document.getElementById(`my-server-${otherServer}-links`);
-            if (!element?.value) continue;
-            
-            const otherDomains = element.value.split('\n');
-            for (const domain of domains) {
-                if (otherDomains.includes(domain)) {
-                    return { domain, server: otherServer };
-                }
+function findDuplicate(server, domains) {
+    for (let otherServer = 1; otherServer <= 8; otherServer++) {
+        if (otherServer === server) continue;
+        
+        const element = document.getElementById(`my-server-${otherServer}-links`);
+        if (!element?.value) continue;
+        
+        const otherDomains = normalizeDomains(element.value);
+        for (const domain of domains) {
+            if (otherDomains.includes(domain)) {
+                return { domain, server: otherServer };
             }
         }
-        return null;
     }
+    return null;
+}
 
 async function sendToServer(server, domainsArray) {
     const data = {
@@ -68,7 +69,7 @@ async function sendToServer(server, domainsArray) {
         try {
             const result = JSON.parse(responseText);
             if (!response.ok) {
-                throw new Error(result.message || `Ошибка HTTP: ${response.status}`);
+                throw new Error(result.сообщение || `Ошибка HTTP: ${response.status}`);
             }
             return result;
         } catch (e) {

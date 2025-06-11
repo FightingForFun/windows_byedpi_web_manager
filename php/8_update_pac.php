@@ -1,5 +1,5 @@
 <?php
-//8_update_pac.php
+// 8_update_pac.php
 declare(strict_types=1);
 set_time_limit(60);
 ini_set('display_errors', '0');
@@ -74,7 +74,7 @@ final class PacUpdater
             throw new RuntimeException('Не удалось прочитать файл');
         }
 
-        $pattern = '/const servers = (\[[\s\S]*?\]);/';
+        $pattern = '/var servers = (\[[\s\S]*?\]);/';
         if (!preg_match($pattern, $content, $matches) || !isset($matches[1])) {
             throw new RuntimeException('Массив серверов не найден в PAC-файле');
         }
@@ -94,12 +94,12 @@ final class PacUpdater
         }
 
         $updatedJson = json_encode($servers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $newContent = preg_replace($pattern, "const servers = $updatedJson;", $content);
-        
+        $newContent = preg_replace($pattern, "var servers = $updatedJson;", $content);
+
         if ($newContent === null) {
             throw new RuntimeException('Ошибка при замене контента PAC-файла');
         }
-        
+
         if (file_put_contents($filename, $newContent, LOCK_EX) === false) {
             throw new RuntimeException('Не удалось обновить PAC-файл');
         }
@@ -122,7 +122,7 @@ try {
 
     $updater = new PacUpdater();
     $pacFileX = __DIR__ . '/../local.pac';
-        $updater->update($pacFileX, $serversConfig);
+    $updater->update($pacFileX, $serversConfig);
 
     http_response_code(200);
     echo json_encode(

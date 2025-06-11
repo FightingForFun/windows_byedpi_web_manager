@@ -1,5 +1,5 @@
 <?php
-//10_save_domains.php
+// 10_save_domains.php
 declare(strict_types=1);
 set_time_limit(60);
 ini_set('display_errors', '0');
@@ -33,7 +33,7 @@ final class RequestValidator
         $json = $this->getRequestBody();
         $data = $this->parseJson($json);
         $this->validateStructure($data);
-        
+
         return $this->extractProcessData($data);
     }
 
@@ -64,7 +64,7 @@ final class RequestValidator
 
     private function validateStructure(array $data): void
     {
-        if (!isset($data['ciadpi_для_использования']) || 
+        if (!isset($data['ciadpi_для_использования']) ||
             count($data['ciadpi_для_использования']) !== 1) {
             throw new RuntimeException('Должен быть указан ровно один процесс', 400);
         }
@@ -75,7 +75,7 @@ final class RequestValidator
         $processName = key($data['ciadpi_для_использования']);
         $processData = reset($data['ciadpi_для_использования']);
         $domains = $processData['домены'] ?? [];
-        
+
         if (!is_array($domains)) {
             throw new RuntimeException('Поле "домены" должно быть массивом', 400);
         }
@@ -100,14 +100,14 @@ final class RequestValidator
     {
         preg_match(self::PROCESS_PATTERN, $processName, $matches);
         $num = (int)($matches[1] ?? 0);
-        
+
         if ($num < self::MIN_PROCESS || $num > self::MAX_PROCESS) {
             throw new RuntimeException(
                 "Номер процесса вне диапазона (" . self::MIN_PROCESS . "-" . self::MAX_PROCESS . "): $num",
                 400
             );
         }
-        
+
         return $num;
     }
 
@@ -122,26 +122,26 @@ final class RequestValidator
             if (!is_string($domain)) {
                 throw new RuntimeException('Домен должен быть строкой', 400);
             }
-            
+
             $cleanDomain = trim($domain);
             if ($cleanDomain === '') {
                 throw new RuntimeException('Домен не может быть пустым', 400);
             }
-            
+
             if (!preg_match(self::DOMAIN_PATTERN, $cleanDomain)) {
                 throw new RuntimeException("Некорректный формат домена: $cleanDomain", 400);
             }
-            
+
             $cleaned[] = $cleanDomain;
         }
-        
+
         return array_unique($cleaned);
     }
 }
 
 final class FileUpdater
 {
-    private const PAC_PATTERN = '/const servers = (\[[\s\S]*?\]);/';
+	private const PAC_PATTERN = '/var servers = (\[[\s\S]*?\]);/';
     private const HOSTS_DIR = 'byedpi';
     private const FILE_PERMISSIONS = 0755;
 
@@ -164,16 +164,16 @@ final class FileUpdater
         if (!file_exists($pacFile)) {
             throw new RuntimeException('Файл local.pac не найден', 500);
         }
-        
+
         if (!is_readable($pacFile) || !is_writable($pacFile)) {
             throw new RuntimeException('Отказано в доступе к файлу local.pac', 500);
         }
-        
+
         $content = file_get_contents($pacFile);
         if ($content === false) {
             throw new RuntimeException('Не удалось прочитать local.pac', 500);
         }
-        
+
         return $content;
     }
 
@@ -182,7 +182,7 @@ final class FileUpdater
         if (!preg_match(self::PAC_PATTERN, $content, $matches)) {
             throw new RuntimeException('Массив серверов в local.pac не найден', 500);
         }
-        
+
         try {
             return json_decode($matches[1], true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
@@ -196,27 +196,27 @@ final class FileUpdater
         if (!isset($servers[$serverIndex])) {
             throw new RuntimeException("Индекс сервера не найден: $serverIndex", 500);
         }
-        
+
         $servers[$serverIndex]['domains'] = $domains;
     }
 
     private function writePacFile(string $pacFile, string $content, array $servers): void
     {
         $newJson = json_encode(
-            $servers, 
+            $servers,
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
         );
-        
+
         $newContent = preg_replace(
-            self::PAC_PATTERN, 
-            'const servers = ' . $newJson . ';', 
+            self::PAC_PATTERN,
+            'var servers = ' . $newJson . ';',
             $content
         );
-        
+
         if ($newContent === null) {
             throw new RuntimeException('Ошибка обработки PAC-файла', 500);
         }
-        
+
         if (file_put_contents($pacFile, $newContent, LOCK_EX) === false) {
             throw new RuntimeException('Не удалось записать в local.pac', 500);
         }
@@ -276,7 +276,7 @@ final class RequestHandler
     {
         $code = $e->getCode() ?: 500;
         http_response_code($code);
-        
+
         echo json_encode(
         [
             'результат' => false,

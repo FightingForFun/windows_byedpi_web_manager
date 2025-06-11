@@ -1,5 +1,5 @@
 function FindProxyForURL(url, host) {
-    const servers = [
+    var servers = [
     {
         "ip": "127.0.0.1",
         "port": 20001,
@@ -42,40 +42,40 @@ function FindProxyForURL(url, host) {
     }
 ];
 
-    if (servers.length === 0) {
+    var exactMap = {};
+    var suffixRules = [];
+    
+    for (var i = 0; i < servers.length; i++) {
+        var server = servers[i];
+        var domains = server.domains;
+        for (var j = 0; j < domains.length; j++) {
+            var domain = domains[j].toLowerCase();
+            exactMap[domain] = server;
+            suffixRules.push({ domain: "." + domain, server: server });
+        }
+    }
+    
+    if (Object.keys(exactMap).length === 0 && suffixRules.length === 0) {
         return "DIRECT";
     }
-
-    const exactMap = new Map();
-    const suffixRules = [];
     
-    for (const [serverIndex, server] of servers.entries()) {
-        if (server.domains.length === 0) continue;
-        
-        for (const domain of server.domains) {
-            const lowerDomain = domain.toLowerCase();
-            exactMap.set(lowerDomain, serverIndex);
-            suffixRules.push({
-                domain: `.${lowerDomain}`,
-                serverIndex: serverIndex
-            });
+    suffixRules.sort(function(a, b) {
+        return b.domain.length - a.domain.length;
+    });
+    
+    var lowerHost = host.toLowerCase();
+    
+    if (exactMap.hasOwnProperty(lowerHost)) {
+        var server = exactMap[lowerHost];
+        return "SOCKS5 " + server.ip + ":" + server.port;
+    }
+    
+    for (var k = 0; k < suffixRules.length; k++) {
+        var rule = suffixRules[k];
+        if (dnsDomainIs(lowerHost, rule.domain)) {
+            return "SOCKS5 " + rule.server.ip + ":" + rule.server.port;
         }
     }
     
-    suffixRules.sort((a, b) => b.domain.length - a.domain.length);
-    const lowerHost = host.toLowerCase();
-
-    if (exactMap.has(lowerHost)) {
-        const server = servers[exactMap.get(lowerHost)];
-        return `SOCKS5 ${server.ip}:${server.port}`;
-    }
-
-    for (const {domain, serverIndex} of suffixRules) {
-        if (dnsDomainIs(lowerHost, domain)) {
-            const server = servers[serverIndex];
-            return `SOCKS5 ${server.ip}:${server.port}`;
-        }
-    }
-
     return "DIRECT";
 }

@@ -1,5 +1,5 @@
 <?php
-//6_detect_first_ggc_domain.php
+// 6_detect_first_ggc_domain.php
 declare(strict_types=1);
 set_time_limit(60);
 ini_set('display_errors', '0');
@@ -91,14 +91,14 @@ final class GgcDetector
                     if (preg_match(self::RESPONSE_PATTERN, $response, $matches)) {
                         $prefix = trim($matches[1], '.: ');
                         $converted = $this->decodePrefix($prefix);
-                        
+
                         if ($converted === null || $converted === '') {
                             $lastError = 'Ошибка декодирования префикса: ' . $prefix;
                             continue;
                         }
                         return sprintf(self::GGC_DOMAIN_TEMPLATE, $converted);
                     }
-                    
+
                     $lastError = 'Не удалось найти префикс в ответе';
                     if ($attempt < self::MAX_ATTEMPTS) sleep(1);
                 }
@@ -134,7 +134,7 @@ try {
         [
             'результат' => true,
             'первый_сервер_ggc' => $domain,
-        ],		
+        ],
         JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
     );
 } catch (Throwable $e) {
