@@ -81,7 +81,7 @@ ByeDPI Web Manager (для Windows)
   - Разные GGC-серверы также отображаются в разделе «Ссылки для проверки стратегий». 
 
 Интерфейс:
-- Можно посмотреть в screenshot.png
+- Можно посмотреть в https://github.com/FightingForFun/windows_byedpi_web_manager/blob/main/screenshot.png
 
 Обсуждение:
 - тут в Discussions или в: https://ntc.party/t/byedpi-web-manager-windows-linux/16575
