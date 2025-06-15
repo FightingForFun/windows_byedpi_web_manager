@@ -1,18 +1,23 @@
 <?php
-// 1_os_detect.php
 declare(strict_types=1);
 set_time_limit(60);
 ini_set('display_errors', '0');
 error_reporting(0);
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Pragma: no-cache");
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
 final class OsDetector
 {
@@ -26,16 +31,17 @@ final class OsDetector
 
     public function getResult(): array
     {
+        $os = $this->detect();
         return [
-            'результат' =>  true,
-            'операционная_система' => $this->detect()
+            'результат' => $os === 'windows',
+            'операционная_система' => $os
         ];
     }
 }
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-        throw new RuntimeException('метод запроса должен быть GET');
+        throw new RuntimeException('Недопустимый метод запроса');
     }
 
     $detector = new OsDetector();
@@ -49,7 +55,7 @@ try {
     echo json_encode(
         [
             'результат' => false,
-            'сообщение' => $e->getMessage(),
+            'сообщение' => 'Ошибка сервера: ' . $e->getMessage()
         ],
         JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
     );

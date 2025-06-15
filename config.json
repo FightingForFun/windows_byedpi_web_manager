@@ -126,15 +126,15 @@
     },
     "ссылки_по_умолчанию_для_проверки": {
         "YouTube": [
+            "https://yt.be",		
             "https://youtu.be",
             "https://youtube.com",
             "https://www.youtube.com",
             "https://yt3.ggpht.com",
             "https://yt4.ggpht.com",
-            "https://i.ytimg.com",
-            "https://accounts.google.com.ua"
+            "https://i.ytimg.com"
         ],
-        "Google Global Cache - Разное": [
+        "Google Global Cache (Разное)": [
             "https://rr2---sn-0ahjg0-gv8e.googlevideo.com",
             "https://rr8---sn-ug5onuxaxjvh-n8vs.googlevideo.com",
             "https://rr5---sn-ug5onuxaxjvh-n8vz.googlevideo.com",
@@ -154,6 +154,58 @@
             "https://rr3---sn-q4fl6n6r.googlevideo.com",
             "https://r4---sn-4pvgq-n8vs.googlevideo.com",
             "https://rr8---sn-ug5onuxaxjvh-n8v6.googlevideo.com"
+        ],
+        "Google и YouTube (Остальное)": [
+            "https://notifications-pa.googleapis.com",
+            "https://firebaseremoteconfig.googleapis.com",
+            "https://suggestqueries.google.com",
+            "https://play.googleapis.com",
+            "https://youtubei.googleapis.com",
+            "https://android.apis.google.com",
+            "https://play.google.com",
+            "https://play-fe.googleapis.com",
+            "https://googleusercontent.com",
+            "https://android.googleapis.com",
+            "https://gstatic.com",
+            "https://googleapis.com",
+            "https://clientservices.googleapis.com",
+            "https://jnn-pa.googleapis.com",
+            "https://android-context-data.googleapis.com",
+            "https://youtube.googleapis.com",
+            "https://fwmrm.net",
+            "https://innovid.com",
+            "https://ssl.google-analytics.com",
+            "https://s.innovid.com",
+            "https://tpc.googlesyndication.com",
+            "https://2975c.v.fwmrm.net",
+            "https://dts.innovid.com",
+            "https://adservice.google.com",
+            "https://wide-youtube.l.google.com",
+            "https://youtube-ui.l.google.com",
+            "https://yt-video-upload.l.google.com",
+            "https://youtube-nocookie.com",
+            "https://youtubeembeddedplayer.googleapis.com",
+            "https://ytimg.l.google.com",
+            "https://accounts.google.com.ua",
+            "https://nhacmp3youtube.com",
+            "https://yt3.ggpht.com/ytc/AIdro_kBR8ozAUUPLsX2hqsvOZjodm4iEMbWbiDG8L0fM4dTEQ=s68-c-k-c0x00ffffff-no-rj",
+            "https://yt3.googleusercontent.com",
+            "https://s.youtube.com",
+            "https://redirector.googlevideo.com",
+            "https://i9.ytimg.com",
+            "https://google.com.ua",
+            "https://www.googletagservices.com",
+            "https://ads.youtube.com",
+            "https://www-googletagmanager.l.google.com",
+            "https://googleadapis.l.google.com",
+            "https://people-pa.googleapis.com",
+            "https://playatoms-pa.googleapis.com",
+            "https://googleadservices.com",
+            "https://analytic-google.com",
+            "https://ad.youtube.com",
+            "https://www.googleadservices.com",
+            "https://www.analytic-google.com",
+            "https://www-google-analytics.l.google.com"	
         ],		
         "NNM-Club": [
             "https://nnmclub.to",
@@ -178,25 +230,19 @@
             "https://static.cdninstagram.com"
         ],
         "Twitter (X)": [
-			"https://twitter.com",		
+            "https://twitter.com",
             "https://x.com",
             "https://pbs.twimg.com",
             "https://abs-0.twimg.com",
-			"https://video.twimg.com",
-			"https://abs.twimg.com"
+            "https://video.twimg.com",
+            "https://abs.twimg.com"
         ],
-        "Facebook / Messenger": [
-			"https://facebook.com",		
+        "Facebook (Messenger)": [
+            "https://facebook.com",
             "https://www.facebook.com",
             "https://fbcdn.net",
             "https://fbsbx.com",
-			"https://messenger.com"
-        ],
-        "XXX": [
-			"https://xnxx.com",		
-            "https://xnxx-ru.com",
-            "https://pornhub.com",
-            "https://ei.phncdn.com/www-static/js/phub.js"
-        ]		
+            "https://messenger.com"
+        ]
     }
 }

@@ -1,4 +1,3 @@
-// 10_start_stop_test.js
 class UIController {
     constructor() {
         this.elements = {
@@ -94,17 +93,25 @@ class UIController {
     disableStop() { this.elements.stopBtn.disabled = true; }
 }
 
-class InputValidator {
+class InputValidatorX {
     static process(id, errorMsg) {
         const el = document.getElementById(id);
         if (!el) return null;
-        const text = el.value.trim();
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-        if (!lines.length) {
+        
+        const cleanedText = el.value
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line)
+            .join('\n');
+        
+        el.value = cleanedText;
+        
+        if (!cleanedText) {
             LogModule.logMessage('ОШИБКА', errorMsg);
             return null;
         }
-        return lines;
+        
+        return cleanedText.split('\n');
     }
 }
 
@@ -200,7 +207,11 @@ class LinkChecker {
             curl_http_version: this.params.httpVersion,
             curl_tls_version: this.params.tlsVersion,
             curl_user_agent: this.params.userAgent,
-            link
+            link,
+            'curl-check-connection': this.params.checkCount,
+			curl_followlocation: this.params.followLocation,
+			curl_ssl_verifypeer: this.params.sslVerifyPeer,
+			curl_ssl_verifyhost: this.params.sslVerifyHost
         };
         try {
             const response = await fetch('php/11_curl.php', {
@@ -244,19 +255,20 @@ class StrategyExecutor {
                 return { processed: true, bucket: null, percentage: 0, responses: [] };
             }
 
-            await this.process.start(this.threadId, this.strategy);
-            LogModule.logMessage('ОТЛАДКА', `Запущен процесс (ciadpi для проверки стратегий) с стратегией: ${this.strategy} на потоке ${this.threadId}`);
+            const args = this.strategy;
+            await this.process.start(this.threadId, args);
+            LogModule.logMessage('ОТЛАДКА', `Запущен процесс (Byedpi для проверки стратегий) с стратегией: ${this.strategy} на потоке ${this.threadId}`);
 
             const responses = await this.checkLinks();
             const percentage = this.calculatePercentage(responses);
             const bucket = this.getBucket(percentage);
 
             await this.process.stop(this.threadId);
-            LogModule.logMessage('ОТЛАДКА', `Остановлен процесс (ciadpi для проверки стратегий) с стратегией: ${this.strategy} на потоке ${this.threadId}`);
+            LogModule.logMessage('ОТЛАДКА', `Остановлен процесс (Byedpi для проверки стратегий) с стратегией: ${this.strategy} на потоке ${this.threadId}`);
 
             return { processed: true, bucket, percentage, responses };
         } catch (error) {
-            LogModule.logMessage('ОШИБКА', `Ошибка при выполнении процесса (ciadpi для проверки стратегий) с стратегией: ${this.strategy} на потоке ${this.threadId}: ${error.message}`);
+            LogModule.logMessage('ОШИБКА', `Ошибка при выполнении процесса (Byedpi для проверки стратегий) с стратегией: ${this.strategy} на потоке ${this.threadId}: ${error.message}`);
             return { processed: true, bucket: null, percentage: 0, responses: [] };
         }
     }
@@ -269,11 +281,11 @@ class StrategyExecutor {
                 await this.process.stop(this.threadId);
                 await new Promise(resolve => setTimeout(resolve, 1000));
             } else if (state === 'используется_другим_процессом') {
-                LogModule.logMessage('ОШИБКА', `Порт (ciadpi для проверки стратегий) на потоке ${this.threadId} занят другой программой.`);
+                LogModule.logMessage('ОШИБКА', `Порт (Byedpi для проверки стратегий) на потоке ${this.threadId} занят другой программой`);
                 return false;
             }
         }
-        LogModule.logMessage('ОШИБКА', `Не удалось освободить порт (ciadpi для проверки стратегий) на потоке ${this.threadId}.`);
+        LogModule.logMessage('ОШИБКА', `Не удалось освободить порт (Byedpi для проверки стратегий) на потоке ${this.threadId}`);
         return false;
     }
 
@@ -312,15 +324,20 @@ class TaskCoordinator {
 
     async run() {
         try {
-            this.ui.initialize();
-            LogModule.logMessage('ИНФО', 'Начали проверку стратегий...');
-
-            const strategies = InputValidator.process('generated-strategies', 'Нет стратегий для обработки.');
-            const links = InputValidator.process('links', 'Нет ссылок для проверки.');
-            if (!strategies || !links) {
+            const strategies = InputValidatorX.process('generated-strategies', 'Нет стратегий для обработки');
+            if (strategies === null) {
                 this.ui.finalize(true);
                 return;
             }
+            
+            const links = InputValidatorX.process('links', 'Нет ссылок для проверки');
+            if (links === null) {
+                this.ui.finalize(true);
+                return;
+            }
+            
+            this.ui.initialize();
+            LogModule.logMessage('ИНФО', 'Начали проверку стратегий');
 
             const threadCount = parseInt(document.getElementById('process-threads').value);
             const strategyQueue = [...strategies];
@@ -335,7 +352,11 @@ class TaskCoordinator {
                 httpMethod: document.getElementById('curl-http-method').value,
                 httpVersion: document.getElementById('curl-http-version').value,
                 tlsVersion: document.getElementById('curl-tls-version').value,
-                userAgent: document.getElementById('curl-user-agent').value
+                userAgent: document.getElementById('curl-user-agent').value,
+                checkCount: document.getElementById('curl-check-count').value,
+				followLocation: document.getElementById('curl-followlocation').value,
+				sslVerifyPeer: document.getElementById('curl-ssl-verifypeer').value,
+				sslVerifyHost: document.getElementById('curl-ssl-verifyhost').value
             };
 
             const processController = new ProcessController(window.appConfig);
@@ -371,9 +392,9 @@ class TaskCoordinator {
 
             await Promise.all(tasks);
             if (this.stopped) {
-                LogModule.logMessage('ИНФО', 'Проверка остановлена.');
+                LogModule.logMessage('ИНФО', 'Проверка остановлена');
             } else {
-                LogModule.logMessage('ИНФО', 'Проверка завершена.');
+                LogModule.logMessage('ИНФО', 'Проверка завершена');
             }
             this.ui.finalize(this.stopped);
         } catch (error) {
@@ -386,9 +407,9 @@ class TaskCoordinator {
 
     stop() {
         this.stopped = true;
-        this.ui.setStatus('Останавливаем...');
+        this.ui.setStatus('Останавливаем');
         this.ui.disableStop();
-        LogModule.logMessage('ИНФО', 'Останавливаем проверку...');
+        LogModule.logMessage('ИНФО', 'Останавливаем проверку');
     }
 
     formatResult(strategy, responses, percentage) {
