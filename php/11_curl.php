@@ -196,23 +196,26 @@ public function performRequestWithRetries(array $data, int $maxAttempts): array
             };
             $userAgent = $this->getUserAgent((int)$data['curl_user_agent']);
             $curlOptions = [
-                CURLOPT_URL => $data['link'],
-                CURLOPT_PROXY => "{$data['socks5_server_ip']}:{$data['socks5_server_port']}",
-                CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME,
-                CURLOPT_CONNECTTIMEOUT => (int)$data['curl_connection_timeout'],
-                CURLOPT_TIMEOUT => (int)$data['curl_max_timeout'],
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_HEADER => true,
-                CURLOPT_SSL_VERIFYPEER => $data['curl_ssl_verifypeer'],
-                CURLOPT_SSL_VERIFYHOST => $data['curl_ssl_verifyhost'],
-                CURLOPT_CAINFO => $certPath,
-                CURLOPT_USERAGENT => $userAgent,
-                CURLOPT_FOLLOWLOCATION => $data['curl_followlocation'],
-                CURLOPT_MAXREDIRS => 5,
-                CURLOPT_NOBODY => strtoupper($data['curl_http_method']) === 'HEAD',
-                CURLOPT_POST => strtoupper($data['curl_http_method']) === 'POST',
-                CURLOPT_POSTFIELDS => 'HELLO',
+            CURLOPT_URL => $data['link'],
+            CURLOPT_PROXY => "{$data['socks5_server_ip']}:{$data['socks5_server_port']}",
+            CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME,
+            CURLOPT_CONNECTTIMEOUT => (int)$data['curl_connection_timeout'],
+            CURLOPT_TIMEOUT => (int)$data['curl_max_timeout'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_SSL_VERIFYPEER => $data['curl_ssl_verifypeer'],
+            CURLOPT_SSL_VERIFYHOST => $data['curl_ssl_verifyhost'],
+            CURLOPT_CAINFO => $certPath,
+            CURLOPT_USERAGENT => $userAgent,
+            CURLOPT_FOLLOWLOCATION => $data['curl_followlocation'],
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_NOBODY => strtoupper($data['curl_http_method']) === 'HEAD',
+            CURLOPT_POST => strtoupper($data['curl_http_method']) === 'POST',
             ];
+
+            if (strtoupper($data['curl_http_method']) === 'POST') {
+                $curlOptions[CURLOPT_POSTFIELDS] = 'HELLO';
+            }
             if ($httpVersion !== null) {
                 $curlOptions[CURLOPT_HTTP_VERSION] = $httpVersion;
             }
