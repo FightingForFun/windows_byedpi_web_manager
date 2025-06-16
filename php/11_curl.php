@@ -60,7 +60,7 @@ final class RequestValidator
         $this->validateNumeric($data['curl-check-connection'], 1, 5, 'количество соединений');
 		$this->validateBoolean($data['curl_followlocation'], 'curl_followlocation');
 		$this->validateBoolean($data['curl_ssl_verifypeer'], 'curl_ssl_verifypeer');
-		$this->validateVerifyHost($data['curl_ssl_verifyhost']);
+		$this->validateVerifyHost($data['curl_ssl_verifyhost']);		
         return $data;
     }
 
@@ -106,7 +106,7 @@ final class RequestValidator
             throw new RuntimeException('Недопустимая версия TLS', 400);
         }
     }
-	
+
     private function validateBoolean(mixed &$value, string $name): void
     {
         if (!is_string($value) || !in_array($value, ['true', 'false'], true)) {
@@ -121,7 +121,7 @@ final class RequestValidator
             throw new RuntimeException('Недопустимое значение curl_ssl_verifyhost', 400);
         }
         $value = (int)$value;
-    }	
+    }
 
     private function validateLink(mixed &$value): void
     {
@@ -150,30 +150,29 @@ final class CurlExecutor
         5 => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_7_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1',
     ];
 
-public function performRequestWithRetries(array $data, int $maxAttempts): array
-{
-    $responses = [];
-    
-    $response = $this->execute($data);
-    $responses[] = $response;
-    
-    for ($i = 1; $i < $maxAttempts; $i++) {
-        if ($response['код_ответа_http'] === '000') {
-            break;
-        }
-        
-        sleep(1);
+    public function performRequestWithRetries(array $data, int $maxAttempts): array
+    {
+        $responses = [];
         
         $response = $this->execute($data);
         $responses[] = $response;
+        
+        for ($i = 1; $i < $maxAttempts; $i++) {
+            if ($response['код_ответа_http'] === '000') {
+                break;
+            }
+            
+            sleep(1);
+            
+            $response = $this->execute($data);
+            $responses[] = $response;
+        }
+        
+        return $response;
     }
-    
-    return $response;
-}
 
     public function execute(array $data): array
     {
-        $certPath = $this->getCertificatePath();
         $ch = curl_init();
         if ($ch === false) {
             throw new RuntimeException('Ошибка инициализации CURL', 500);
@@ -196,21 +195,20 @@ public function performRequestWithRetries(array $data, int $maxAttempts): array
             };
             $userAgent = $this->getUserAgent((int)$data['curl_user_agent']);
             $curlOptions = [
-            CURLOPT_URL => $data['link'],
-            CURLOPT_PROXY => "{$data['socks5_server_ip']}:{$data['socks5_server_port']}",
-            CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME,
-            CURLOPT_CONNECTTIMEOUT => (int)$data['curl_connection_timeout'],
-            CURLOPT_TIMEOUT => (int)$data['curl_max_timeout'],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_SSL_VERIFYPEER => $data['curl_ssl_verifypeer'],
-            CURLOPT_SSL_VERIFYHOST => $data['curl_ssl_verifyhost'],
-            CURLOPT_CAINFO => $certPath,
-            CURLOPT_USERAGENT => $userAgent,
-            CURLOPT_FOLLOWLOCATION => $data['curl_followlocation'],
-            CURLOPT_MAXREDIRS => 5,
-            CURLOPT_NOBODY => strtoupper($data['curl_http_method']) === 'HEAD',
-            CURLOPT_POST => strtoupper($data['curl_http_method']) === 'POST',
+                CURLOPT_URL => $data['link'],
+                CURLOPT_PROXY => "{$data['socks5_server_ip']}:{$data['socks5_server_port']}",
+                CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME,
+                CURLOPT_CONNECTTIMEOUT => (int)$data['curl_connection_timeout'],
+                CURLOPT_TIMEOUT => (int)$data['curl_max_timeout'],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HEADER => true,
+                CURLOPT_SSL_VERIFYPEER => $data['curl_ssl_verifypeer'],
+                CURLOPT_SSL_VERIFYHOST => $data['curl_ssl_verifyhost'],
+                CURLOPT_USERAGENT => $userAgent,
+                CURLOPT_FOLLOWLOCATION => $data['curl_followlocation'],
+                CURLOPT_MAXREDIRS => 5,
+                CURLOPT_NOBODY => strtoupper($data['curl_http_method']) === 'HEAD',
+                CURLOPT_POST => strtoupper($data['curl_http_method']) === 'POST',
             ];
 
             if (strtoupper($data['curl_http_method']) === 'POST') {
@@ -251,15 +249,6 @@ public function performRequestWithRetries(array $data, int $maxAttempts): array
             throw new RuntimeException("Неверный идентификатор User-Agent: $id", 400);
         }
         return self::USER_AGENTS[$id];
-    }
-
-    private function getCertificatePath(): string
-    {
-        $certFile = __DIR__ . '/../curl_cert/cacert.pem';
-        if (!file_exists($certFile)) {
-            throw new RuntimeException('Файл сертификатов не найден', 500);
-        }
-        return $certFile;
     }
 }
 
